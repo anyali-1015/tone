@@ -57,19 +57,19 @@ export default function NotebookPage() {
         </Link>
       </header>
 
-      <div className="flex flex-wrap items-start gap-8">
-        <nav aria-label="Collections" className="flex w-[220px] shrink-0 flex-col gap-0.5">
+      <div className="flex flex-col items-stretch gap-5 md:flex-row md:items-start md:gap-8">
+        <nav aria-label="Collections" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:w-[220px] md:shrink-0 md:flex-col md:gap-0.5 md:overflow-visible md:px-0 md:pb-0">
           {cols.map((c, idx) => {
             const header = c.group && c.group !== cols[idx - 1]?.group ? c.group : null;
             const count = (data?.phrases ?? []).filter(c.test).length;
             return (
-              <div key={c.key} className="flex flex-col">
-                {header && <p className="eyebrow m-0 mt-4 mb-1 px-3">{header}</p>}
+              <div key={c.key} className="flex shrink-0 flex-col">
+                {header && <p className="eyebrow m-0 mt-4 mb-1 hidden px-3 md:block">{header}</p>}
                 <button
                   type="button"
                   aria-current={active === c.key ? "true" : undefined}
                   onClick={() => setActive(c.key)}
-                  className="flex min-h-10 items-center justify-between rounded-xl px-3 text-left text-[15px]"
+                  className="flex min-h-10 items-center justify-between gap-2 rounded-full px-3.5 text-left text-[15px] whitespace-nowrap max-md:border max-md:border-[var(--hairline-2)] md:rounded-xl md:px-3"
                   style={active === c.key ? { background: "var(--accent-wash)", color: "var(--accent)", fontWeight: 600 } : { color: "var(--ink)" }}
                 >
                   <span className="truncate">{c.name}</span>
@@ -81,12 +81,12 @@ export default function NotebookPage() {
             );
           })}
           {newList === null ? (
-            <button type="button" className="mt-2 flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm" style={{ color: "var(--muted)" }} onClick={() => setNewList("")}>
+            <button type="button" className="flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-sm whitespace-nowrap md:mt-2" style={{ color: "var(--muted)" }} onClick={() => setNewList("")}>
               <IconPlus size={16} /> New list
             </button>
           ) : (
             <form
-              className="mt-2 flex gap-1.5 px-1"
+              className="flex shrink-0 gap-1.5 px-1 md:mt-2"
               onSubmit={(e) => {
                 e.preventDefault();
                 void createList();
@@ -118,8 +118,8 @@ export default function NotebookPage() {
             <label htmlFor="nb-search" className="sr-only">
               Search phrases
             </label>
-            <input id="nb-search" className="input max-w-[320px]" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
-            <div className="seg" role="group" aria-label="Filter">
+            <input id="nb-search" className="input md:max-w-[320px]" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Filter">
               {(
                 [
                   ["all", "All"],

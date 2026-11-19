@@ -131,7 +131,7 @@ function Review() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex items-center gap-4 px-7 py-4">
+      <header className="flex items-center gap-4 px-4 py-4 md:px-7" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
         <button type="button" className="btn h-11 w-11 p-0" aria-label="Exit review" onClick={() => router.back()}>
           <IconClose size={18} />
         </button>
@@ -145,9 +145,9 @@ function Review() {
         </span>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-6 pb-16">
+      <main className="flex flex-1 items-start justify-center px-4 pt-4 pb-[max(24px,env(safe-area-inset-bottom))] md:items-center md:px-6 md:pt-0 md:pb-16">
         {queue.length === 0 ? (
-          <div className="card flex max-w-[520px] flex-col items-center gap-3 p-10 text-center">
+          <div className="card flex max-w-[520px] flex-col items-center gap-3 p-6 text-center md:p-10">
             <h1 className="m-0 text-2xl font-semibold">Nothing due right now</h1>
             <p className="m-0" style={{ color: "var(--muted)" }}>
               Save a few phrases from a conversation or a video, and they&apos;ll come back here when it&apos;s time.
@@ -157,15 +157,15 @@ function Review() {
             </Link>
           </div>
         ) : done ? (
-          <div className="card rise flex max-w-[560px] flex-col items-center gap-3 p-10 text-center">
+          <div className="card rise flex max-w-[560px] flex-col items-center gap-3 p-6 text-center md:p-10">
             <p className="eyebrow m-0">Done</p>
-            <h1 className="m-0 text-[28px] font-semibold">
+            <h1 className="m-0 text-[24px] font-semibold md:text-[28px]">
               {queue.length} reviewed · {again} to revisit
             </h1>
             <p className="m-0 text-[17px]" style={{ color: "var(--ink-2)" }}>
               Now use three of these out loud in a {suggestion.title.toLowerCase()} conversation.
             </p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
               <Link href="/" className="btn">
                 Done
               </Link>
@@ -177,7 +177,7 @@ function Review() {
         ) : (
           item && (
             <div key={i} className="rise flex w-full max-w-[640px] flex-col gap-6">
-              <div className="card flex min-h-[320px] flex-col items-center justify-center gap-5 px-10 py-12 text-center">
+              <div className="card flex min-h-[280px] flex-col items-center justify-center gap-5 px-5 py-8 text-center md:min-h-[320px] md:px-10 md:py-12">
                 <p className="eyebrow m-0">
                   {item.kind === "echo" ? "Echo · hear it, say it back" : item.kind === "recall" ? "Recall · say the phrase" : item.kind === "pick" ? "Pick · the most natural" : "Shorten · say it like a native"}
                 </p>
@@ -231,7 +231,7 @@ function Review() {
 
                 {revealed && item.kind !== "pick" && (
                   <div className="rise flex flex-col items-center gap-2">
-                    <p className="m-0 text-[32px] leading-10 font-semibold tracking-tight">{item.phrase.text}</p>
+                    <p className="m-0 text-[26px] leading-9 font-semibold tracking-tight md:text-[32px] md:leading-10">{item.phrase.text}</p>
                     <RegisterChip value={item.phrase.register} />
                   </div>
                 )}
@@ -252,13 +252,13 @@ function Review() {
                       [4, "Easy"],
                     ] as const
                   ).map(([g, l]) => (
-                    <button key={g} type="button" className="btn min-h-12" onClick={() => grade(g)}>
-                      {l} <span className="kbd">{g}</span>
+                    <button key={g} type="button" className="btn min-h-12 px-2 md:px-[18px]" onClick={() => grade(g)}>
+                      {l} <span className="kbd hidden md:inline">{g}</span>
                     </button>
                   ))}
                 </div>
               )}
-              <p className="m-0 text-center text-xs" style={{ color: "var(--muted)" }}>
+              <p className="m-0 hidden text-center text-xs md:block" style={{ color: "var(--muted)" }}>
                 Space to reveal · 1–4 to grade · Esc to exit
               </p>
             </div>

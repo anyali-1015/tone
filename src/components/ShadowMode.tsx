@@ -218,10 +218,10 @@ export function ShadowMode({
       role="dialog"
       aria-modal="true"
       aria-label="Shadow mode"
-      className="fixed inset-0 z-40 flex flex-col"
+      className="fixed inset-0 z-40 flex flex-col overflow-y-auto"
       style={{ background: "color-mix(in srgb, var(--bg) 88%, transparent)", backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" }}
     >
-      <header className="flex items-center justify-between px-7 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-7" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
         <div className="flex items-center gap-3">
           <button type="button" className="btn h-11 w-11 p-0" aria-label="Exit shadow mode" onClick={exit}>
             <IconClose size={18} />
@@ -235,11 +235,11 @@ export function ShadowMode({
             </p>
           </div>
         </div>
-        <ol className="m-0 flex list-none items-center gap-2 p-0 text-sm" aria-label="Steps">
+        <ol className="m-0 flex list-none items-center gap-1 p-0 text-[13px] md:gap-2 md:text-sm" aria-label="Steps">
           {(["listen", "say", "compare"] as Step[]).map((s, i) => (
             <li
               key={s}
-              className="rounded-full px-3 py-1.5"
+              className="rounded-full px-2.5 py-1.5 md:px-3"
               aria-current={step === s ? "step" : undefined}
               style={step === s ? { background: "var(--accent-wash)", color: "var(--accent)", fontWeight: 600 } : { color: "var(--muted)" }}
             >
@@ -249,12 +249,12 @@ export function ShadowMode({
         </ol>
       </header>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-10 px-10">
-        <div className="flex w-full max-w-[900px] items-center gap-6">
-          <button type="button" className="btn h-12 w-12 shrink-0 p-0" aria-label="Previous line" disabled={index === 0} onClick={() => onIndex(index - 1)}>
+      <div className="flex flex-1 flex-col items-center justify-center gap-7 px-4 py-6 md:gap-10 md:px-10 md:py-0">
+        <div className="flex w-full max-w-[900px] items-center gap-2 md:gap-6">
+          <button type="button" className="btn h-11 w-11 shrink-0 p-0 md:h-12 md:w-12" aria-label="Previous line" disabled={index === 0} onClick={() => onIndex(index - 1)}>
             <IconPrev />
           </button>
-          <p className="m-0 flex-1 text-center text-[34px] leading-[48px] font-medium tracking-tight">
+          <p className="m-0 min-w-0 flex-1 text-center text-[24px] leading-[40px] font-medium tracking-tight md:text-[34px] md:leading-[48px]">
             {pieces.map((p, i) =>
               p.sounds ? (
                 <span key={i} className="relative inline-block" title={p.sounds === "reduced" ? "reduced in speech" : `sounds like “${p.sounds}”`}>
@@ -272,7 +272,7 @@ export function ShadowMode({
           </p>
           <button
             type="button"
-            className="btn h-12 w-12 shrink-0 p-0"
+            className="btn h-11 w-11 shrink-0 p-0 md:h-12 md:w-12"
             aria-label="Next line"
             disabled={index >= video.lines.length - 1}
             onClick={() => onIndex(index + 1)}
@@ -290,12 +290,19 @@ export function ShadowMode({
           </button>
           <button
             type="button"
-            className={`btn btn-primary min-h-14 px-7 text-base ${recording ? "listening" : ""}`}
-            onMouseDown={() => void startRec()}
-            onMouseUp={stopRec}
-            onMouseLeave={() => recording && stopRec()}
+            className={`btn btn-primary min-h-14 touch-none px-7 text-base select-none [-webkit-touch-callout:none] ${recording ? "listening" : ""}`}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.currentTarget.setPointerCapture(e.pointerId);
+              void startRec();
+            }}
+            onPointerUp={stopRec}
+            onPointerCancel={() => recording && stopRec()}
+            onContextMenu={(e) => e.preventDefault()}
           >
-            <IconMic size={20} /> {recording ? "Recording… release to stop" : "Hold to record (R)"}
+            <IconMic size={20} /> {recording ? "Recording… release to stop" : <span>
+                Hold to record<span className="hidden md:inline"> (R)</span>
+              </span>}
           </button>
         </div>
         {line.start < 0 && (
@@ -313,7 +320,7 @@ export function ShadowMode({
           {recording && <canvas ref={liveCanvas} width={1440} height={120} className="h-[60px] w-full" aria-label="Live waveform" />}
           {take && !recording && (
             <div className="card flex flex-col gap-3 p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                 <span className="eyebrow">Compare</span>
                 <span className="text-xs" style={{ color: "var(--muted)" }}>
                   YouTube&apos;s audio can&apos;t be captured, so only your take is drawn.
@@ -333,13 +340,13 @@ export function ShadowMode({
         </div>
       </div>
 
-      <footer className="px-7 py-4 text-center text-[13px]" style={{ color: "var(--muted)" }}>
+      <footer className="hidden px-7 py-4 text-center text-[13px] md:block" style={{ color: "var(--muted)" }}>
         Space replay · hold R to record · ← → lines · Esc exit
       </footer>
 
       {askKeep && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,20,24,0.18)" }}>
-          <div role="alertdialog" aria-label="Keep these recordings?" className="glass rise flex w-[400px] flex-col gap-4 rounded-3xl p-6" style={{ boxShadow: "var(--shadow-lg)" }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(20,20,24,0.18)" }}>
+          <div role="alertdialog" aria-label="Keep these recordings?" className="glass rise flex w-full max-w-[400px] flex-col gap-4 rounded-3xl p-6" style={{ boxShadow: "var(--shadow-lg)" }}>
             <h2 className="m-0 text-lg font-semibold">Keep these recordings?</h2>
             <p className="m-0 text-sm" style={{ color: "var(--ink-2)" }}>
               {takes.length} take{takes.length === 1 ? "" : "s"} from this session. Discarding saves space.

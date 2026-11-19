@@ -14,6 +14,7 @@ import { db, logActivity } from "@/lib/db";
 import { savePhrase } from "@/lib/phrases";
 import { useSettings } from "@/lib/settings";
 import type { Phrase, PhraseInfo, Video } from "@/lib/types";
+import { useCoarsePointer } from "@/lib/useCoarsePointer";
 
 const SPEEDS = [0.5, 0.75, 1];
 
@@ -142,6 +143,24 @@ function Player({ video, phrases }: { video: Video; phrases: Phrase[] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [shadow, togglePlay, jump, current, lines.length]);
 
+  /* Phones don't fire mouseup after a long-press selection, so watch the selection itself. */
+  const coarse = useCoarsePointer();
+  useEffect(() => {
+    if (!coarse) return;
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const onChange = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        if (listRef.current?.contains(window.getSelection()?.anchorNode ?? null)) onMouseUp();
+      }, 450);
+    };
+    document.addEventListener("selectionchange", onChange);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("selectionchange", onChange);
+    };
+  });
+
   function onMouseUp() {
     const s = window.getSelection();
     const text = s?.toString().replace(/\s+/g, " ").trim() ?? "";
@@ -179,8 +198,8 @@ function Player({ video, phrases }: { video: Video; phrases: Phrase[] }) {
       </div>
 
       <div className="flex flex-wrap items-start gap-7">
-        <section aria-label="Video" className="sticky top-6 flex min-w-0 flex-[3_1_480px] flex-col gap-3.5">
-          <div className="aspect-video overflow-hidden rounded-[20px]" style={{ background: "#000" }}>
+        <section aria-label="Video" className="flex min-w-0 flex-[3_1_480px] flex-col gap-3.5 md:sticky md:top-6">
+          <div className="-mx-4 aspect-video overflow-hidden md:mx-0 md:rounded-[20px]" style={{ background: "#000" }}>
             <YouTubePlayer
               ref={player}
               videoId={video.youtubeId}
@@ -193,7 +212,7 @@ function Player({ video, phrases }: { video: Video; phrases: Phrase[] }) {
               onPlayingChange={setPlaying}
             />
           </div>
-          <div className="glass flex flex-wrap items-center gap-2.5 rounded-full p-2.5" style={{ boxShadow: "var(--shadow-md)" }}>
+          <div className="glass flex flex-wrap items-center gap-2 rounded-[28px] p-2 md:gap-2.5 md:rounded-full md:p-2.5" style={{ boxShadow: "var(--shadow-md)" }}>
             <button
               type="button"
               aria-label={playing ? "Pause" : "Play"}
@@ -204,7 +223,10 @@ function Player({ video, phrases }: { video: Video; phrases: Phrase[] }) {
               {playing ? <IconPause size={16} /> : <IconPlay size={16} />}
             </button>
             <button type="button" className="btn" aria-pressed={loop} onClick={() => setLoop((v) => !v)} style={loop ? { background: "var(--accent-wash)" } : undefined}>
-              <IconLoop size={16} /> Loop line
+              <IconLoop size={16} />
+              <span>
+                Loop<span className="hidden sm:inline"> line</span>
+              </span>
             </button>
             <div className="seg" role="group" aria-label="Speed">
               {SPEEDS.map((s) => (
@@ -223,16 +245,19 @@ function Player({ video, phrases }: { video: Video; phrases: Phrase[] }) {
             </div>
             <div className="grow" />
             <button type="button" className="btn btn-primary" onClick={() => setShadow(true)}>
-              <IconMic size={18} /> Shadow <span className="text-xs opacity-80">R</span>
+              <IconMic size={18} /> Shadow <span className="hidden text-xs opacity-80 md:inline">R</span>
             </button>
           </div>
-          <p className="m-0 px-2 text-xs" style={{ color: "var(--muted)" }}>
+          <p className="m-0 px-2 text-xs md:hidden" style={{ color: "var(--muted)" }}>
+            Tap a line to jump to it · press and hold words to look them up and save
+          </p>
+          <p className="m-0 hidden px-2 text-xs md:block" style={{ color: "var(--muted)" }}>
             Space play/pause · ← → lines · L loop · R shadow · select words to save
           </p>
         </section>
 
         <section aria-label="Transcript" className="flex min-w-0 flex-[2_1_360px] flex-col gap-3">
-          <div className="seg self-start" role="tablist" aria-label="Transcript or phrases">
+          <div className="seg max-w-full self-start overflow-x-auto" role="tablist" aria-label="Transcript or phrases">
             <button type="button" role="tab" aria-selected={tab === "transcript"} onClick={() => setTab("transcript")}>
               Transcript
             </button>
@@ -242,7 +267,7 @@ function Player({ video, phrases }: { video: Video; phrases: Phrase[] }) {
           </div>
 
           {tab === "transcript" ? (
-            <div ref={listRef} className="flex max-h-[calc(100vh-220px)] flex-col gap-0.5 overflow-y-auto p-1" onMouseUp={onMouseUp}>
+            <div ref={listRef} className="flex max-h-[65vh] flex-col gap-0.5 overflow-y-auto p-1 md:max-h-[calc(100vh-220px)]" onMouseUp={onMouseUp}>
               {lines.map((l, i) => (
                 <div key={i} data-line={i} className="flex flex-col">
                   <div
@@ -399,7 +424,7 @@ function PhrasePopover({
     <div
       role="dialog"
       aria-label={`Phrase: ${selection.text}`}
-      className="rise mt-1.5 mb-2.5 ml-3 flex flex-col gap-2.5 rounded-[20px] px-5 py-4"
+      className="rise mt-1.5 mb-2.5 flex flex-col gap-2.5 rounded-[20px] px-4 py-4 md:ml-3 md:px-5"
       style={{
         background: "var(--glass-strong)",
         backdropFilter: "blur(24px)",

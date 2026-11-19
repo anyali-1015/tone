@@ -6,7 +6,7 @@ import { logActivity } from "@/lib/db";
 import { savePhrase } from "@/lib/phrases";
 import type { Currency, Register } from "@/lib/types";
 import { CurrencyChip, RegisterChip } from "./chips";
-import { IconCheck, IconSearch } from "./icons";
+import { IconCheck, IconClose, IconSearch } from "./icons";
 import { Modal } from "./Modal";
 
 interface FindOption {
@@ -124,10 +124,13 @@ function FindPanel({
 
   return (
     <Modal label="Find the phrase" onClose={onClose} width={640} align="top">
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4 p-5 md:p-6">
         <div className="flex items-center gap-2" style={{ color: "var(--muted)" }}>
           <IconSearch size={18} />
           <span className="eyebrow">Find the phrase</span>
+          <button type="button" onClick={onClose} aria-label="Close" className="-my-2 ml-auto flex h-10 w-10 items-center justify-center rounded-full md:hidden" style={{ background: "var(--wash)" }}>
+            <IconClose size={16} />
+          </button>
         </div>
         <label htmlFor="find-text" className="sr-only">
           Describe what you mean
@@ -147,8 +150,8 @@ function FindPanel({
           placeholder="Describe what you mean, as long as you need…  e.g. “the drink I always order every time I come here because I like it most”"
           className="input resize-none text-[17px] leading-7"
         />
-        <div className="flex items-center justify-between">
-          <span className="text-[13px]" style={{ color: "var(--muted)" }}>
+        <div className="flex items-center justify-end md:justify-between">
+          <span className="hidden text-[13px] md:inline" style={{ color: "var(--muted)" }}>
             Enter to find · Esc to close
           </span>
           <button type="button" className="btn btn-primary" onClick={run} disabled={loading || !text.trim()}>

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFindPhraseInsert } from "@/components/FindPhrase";
-import { IconCheck, IconClose, IconMic, IconSpeaker } from "@/components/icons";
+import { IconCheck, IconClose, IconMic, IconSearch, IconSpeaker } from "@/components/icons";
 import { Modal } from "@/components/Modal";
 import { callAi } from "@/lib/ai";
 import { db, logActivity, uid } from "@/lib/db";
@@ -13,6 +13,7 @@ import { savePhrase } from "@/lib/phrases";
 import { getScene, planTwists, TOPICS, type Scene } from "@/lib/scenes";
 import { recognitionSupported, speak, stopSpeaking, useDictation } from "@/lib/speech";
 import type { Conversation, Phrase, Rewrite, SceneProgress, Turn } from "@/lib/types";
+import { useCoarsePointer } from "@/lib/useCoarsePointer";
 
 export default function LivePage() {
   return (
@@ -166,7 +167,8 @@ function Live() {
     [thinking, ended, persist, dict],
   );
 
-  /* ---- Hold Space to talk ---- */
+  /* ---- Hold Space (or the mic button) to talk ---- */
+  const coarse = useCoarsePointer();
   const holding = useRef(false);
   const beginTalk = useCallback(() => {
     if (holding.current || ended) return;
@@ -313,8 +315,8 @@ function Live() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="glass sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-x-0 border-t-0 px-7 py-3.5" style={{ borderBottom: "1px solid var(--hairline)" }}>
-        <div className="flex items-center gap-4">
+      <header className="glass sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-x-0 border-t-0 px-4 py-3 md:px-7 md:py-3.5" style={{ borderBottom: "1px solid var(--hairline)", paddingTop: "max(12px, env(safe-area-inset-top))" }}>
+        <div className="flex min-w-0 flex-wrap items-center gap-3 md:gap-4">
           <Link href={scene ? `/talk/scene/${scene.id}` : "/talk"} aria-label="Exit conversation" className="btn h-11 w-11 p-0">
             <IconClose size={18} />
           </Link>
@@ -331,16 +333,16 @@ function Live() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" className="btn" aria-pressed={hideText} onClick={() => setHideText((v) => !v)} style={hideText ? { background: "var(--accent-wash)" } : undefined}>
+          <button type="button" className="btn btn-sm md:min-h-11 md:px-[18px] md:text-[15px]" aria-pressed={hideText} onClick={() => setHideText((v) => !v)} style={hideText ? { background: "var(--accent-wash)" } : undefined}>
             {hideText ? "Show text" : "Hide text"}
           </button>
-          <button type="button" className="btn font-semibold" onClick={wrapUp} disabled={!conv || !lastUser}>
+          <button type="button" className="btn btn-sm font-semibold md:min-h-11 md:px-[18px] md:text-[15px]" onClick={wrapUp} disabled={!conv || !lastUser}>
             Wrap up
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 flex-wrap gap-8 px-7 py-8">
+      <div className="flex flex-1 flex-wrap gap-6 px-4 py-5 md:gap-8 md:px-7 md:py-8">
         <main className="flex min-w-0 flex-[999_1_560px] justify-center">
           <div className="flex w-full max-w-[680px] flex-col gap-5">
             {conv?.turns.map((t) =>
@@ -349,7 +351,7 @@ function Live() {
                   <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold" style={{ background: "#F1E6D8", color: "#7A4E1D" }}>
                     {initial}
                   </span>
-                  <div className="flex max-w-[80%] flex-col gap-1.5">
+                  <div className="flex max-w-[85%] flex-col gap-1.5 md:max-w-[80%]">
                     <p className="m-0 text-xs" style={{ color: "var(--muted)" }}>
                       {partnerName}
                     </p>
@@ -365,7 +367,7 @@ function Live() {
                 </div>
               ) : (
                 <div key={t.id} className="rise flex flex-col items-end gap-2">
-                  <div className="max-w-[80%] px-4.5 py-3.5" style={{ background: "var(--accent-wash)", borderRadius: "20px 4px 20px 20px" }}>
+                  <div className="max-w-[88%] px-4.5 py-3.5 md:max-w-[80%]" style={{ background: "var(--accent-wash)", borderRadius: "20px 4px 20px 20px" }}>
                     <p className="m-0 text-[17px] leading-[26px]">{t.text}</p>
                   </div>
                   {openRewrites[t.id] ? (
@@ -434,15 +436,20 @@ function Live() {
             )}
             <div ref={bottom} className="min-h-4 grow" />
 
-            <div className="glass sticky bottom-6 flex items-center gap-3 rounded-full p-3" style={{ boxShadow: "var(--shadow-md)" }}>
+            <div className="glass sticky bottom-[max(12px,env(safe-area-inset-bottom))] flex items-center gap-2 rounded-full p-2 md:bottom-6 md:gap-3 md:p-3" style={{ boxShadow: "var(--shadow-md)" }}>
               <button
                 type="button"
                 aria-label="Hold to talk"
                 disabled={ended || !recognitionSupported()}
-                onMouseDown={beginTalk}
-                onMouseUp={() => void endTalk()}
-                onMouseLeave={() => holding.current && void endTalk()}
-                className={`flex h-13 w-13 shrink-0 items-center justify-center rounded-full ${dict.listening ? "listening" : ""}`}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  beginTalk();
+                }}
+                onPointerUp={() => void endTalk()}
+                onPointerCancel={() => holding.current && void endTalk()}
+                onContextMenu={(e) => e.preventDefault()}
+                className={`flex h-13 w-13 shrink-0 touch-none items-center justify-center rounded-full select-none [-webkit-touch-callout:none] ${dict.listening ? "listening" : ""}`}
                 style={{ width: 52, height: 52, background: "var(--accent)", color: "var(--accent-ink)", opacity: ended ? 0.5 : 1 }}
               >
                 <IconMic size={22} />
@@ -458,7 +465,9 @@ function Live() {
                   dict.listening
                     ? "Listening…"
                     : recognitionSupported()
-                      ? "Hold Space to talk, or type…"
+                      ? coarse
+                        ? "Hold the mic, or type…"
+                        : "Hold Space to talk, or type…"
                       : "Type your reply… (voice needs Chrome)"
                 }
                 value={dict.listening ? dict.interim : draft}
@@ -473,11 +482,14 @@ function Live() {
                 }}
                 disabled={ended}
               />
-              <button type="button" className="btn" aria-pressed={Boolean(hint)} onClick={getHint} disabled={ended || hintLoading}>
+              <button type="button" className="btn btn-sm shrink-0 md:min-h-11 md:px-[18px] md:text-[15px]" aria-pressed={Boolean(hint)} onClick={getHint} disabled={ended || hintLoading}>
                 {hintLoading ? "…" : "Hint"}
               </button>
-              <button type="button" className="btn btn-ghost" onClick={openFind} style={{ background: "var(--wash)" }}>
-                ⌘K Find the phrase
+              <button type="button" className="btn btn-ghost shrink-0 p-0 md:px-[18px]" aria-label="Find the phrase" onClick={openFind} style={{ background: "var(--wash)", minWidth: 44 }}>
+                <span className="md:hidden">
+                  <IconSearch size={18} />
+                </span>
+                <span className="hidden md:inline">⌘K Find the phrase</span>
               </button>
             </div>
             {dict.error && (
@@ -485,13 +497,16 @@ function Live() {
                 {dict.error}
               </p>
             )}
-            <p className="-mt-2 m-0 text-center text-xs" style={{ color: "var(--muted)" }}>
+            <p className="-mt-2 m-0 text-center text-xs md:hidden" style={{ color: "var(--muted)" }}>
+              Press and hold the mic while you speak · let go to send
+            </p>
+            <p className="-mt-2 m-0 hidden text-center text-xs md:block" style={{ color: "var(--muted)" }}>
               Hold Space to talk · N: say my last line more natively · ⌘K find a phrase · Esc exit
             </p>
           </div>
         </main>
 
-        <aside aria-label="This conversation" className="glass flex max-w-[320px] min-w-[240px] flex-[1_1_260px] flex-col gap-6 self-start rounded-3xl p-5">
+        <aside aria-label="This conversation" className="glass flex w-full flex-col md:w-auto md:max-w-[320px] md:min-w-[240px] md:flex-[1_1_260px] gap-6 self-start rounded-3xl p-5">
           <section className="flex flex-col gap-2.5">
             <h2 className="eyebrow m-0">Saved here</h2>
             {(savedHere ?? []).length === 0 ? (
@@ -682,7 +697,7 @@ function Recap({
                 </p>
               )}
               {data.improve.map((i) => (
-                <div key={i.said} className="grid grid-cols-2 gap-3">
+                <div key={i.said} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="card p-4">
                     <p className="eyebrow m-0 mb-1">You said</p>
                     <p className="m-0 text-[15px]" style={{ color: "var(--ink-2)" }}>

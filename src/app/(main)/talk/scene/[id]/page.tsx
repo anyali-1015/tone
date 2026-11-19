@@ -105,10 +105,10 @@ function ScenePrepPageInner() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h2 className="eyebrow m-0">Situations</h2>
           <span className="text-[13px]" style={{ color: "var(--muted)" }}>
-            {covered.length} of {scene.twists.length} practiced · click one to practice it next
+            {covered.length} of {scene.twists.length} practiced · tap one to practice it next
           </span>
         </div>
         <div className="flex flex-wrap gap-2">

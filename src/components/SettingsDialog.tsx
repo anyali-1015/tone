@@ -44,7 +44,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal label="Settings" onClose={onClose} width={560}>
-      <div className="flex flex-col gap-6 p-7">
+      <div className="flex flex-col gap-6 p-5 md:p-7">
         <h2 className="m-0 text-[22px] font-semibold">Settings</h2>
 
         <Row label="AI">

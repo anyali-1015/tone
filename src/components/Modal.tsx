@@ -39,12 +39,8 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center px-4"
-      style={{
-        alignItems: align === "top" ? "flex-start" : "center",
-        paddingTop: align === "top" ? "14vh" : undefined,
-        background: "rgba(20,20,24,0.18)",
-      }}
+      className={`fixed inset-0 z-50 flex justify-center px-3 md:px-4 ${align === "top" ? "items-start pt-[max(16px,env(safe-area-inset-top))] md:pt-[14vh]" : "items-center"}`}
+      style={{ background: "rgba(20,20,24,0.18)" }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -57,7 +53,7 @@ export function Modal({
         className="rise w-full overflow-auto rounded-3xl"
         style={{
           maxWidth: width,
-          maxHeight: "80vh",
+          maxHeight: "min(80vh, calc(100dvh - 32px))",
           background: "var(--glass-strong)",
           backdropFilter: "blur(28px)",
           WebkitBackdropFilter: "blur(28px)",
