@@ -3,7 +3,7 @@ import "server-only";
 /**
  * One interface for every AI call (spec §8): switching providers is a settings change.
  *
- *   AI_PROVIDER=gemini   GEMINI_API_KEY=…  GEMINI_MODEL=gemini-2.5-flash-lite   (default)
+ *   AI_PROVIDER=gemini   GEMINI_API_KEY=…  GEMINI_MODEL=gemini-3.5-flash-lite   (default)
  *   AI_PROVIDER=openai   OPENAI_API_KEY=…  OPENAI_MODEL=…  OPENAI_BASE_URL=…    (any OpenAI-compatible API)
  */
 
@@ -20,7 +20,7 @@ export function aiConfig(): { provider: Provider; model: string; ready: boolean 
   }
   return {
     provider,
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
+    model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
     ready: Boolean(process.env.GEMINI_API_KEY),
   };
 }
